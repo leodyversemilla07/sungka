@@ -1,0 +1,1131 @@
+/* ============================================
+   SUNGKA - Traditional Filipino Board Game
+   Traditional Wooden Aesthetic
+   ============================================ */
+
+:root {
+  --board-bg: #5C3317;
+  --board-border: #3E1F0D;
+  --board-inner: #6B3A1F;
+  --pit-bg: #4A2810;
+  --pit-border: #3A1E0A;
+  --pit-inner: #3E2211;
+  --store-bg: #3E2211;
+  --shell-color: #F5E6D3;
+  --shell-shadow: #D4C4B0;
+  --text-light: #F5E6D3;
+  --text-gold: #D4A855;
+  --highlight-p1: #D4A855;
+  --highlight-p2: #8BC34A;
+  --hover-glow: rgba(212, 168, 85, 0.4);
+  --bg-dark: #1a0e08;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Cinzel', serif;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Background texture */
+.game-container {
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(ellipse at center, #2a1509 0%, #1a0e08 70%);
+  position: relative;
+}
+
+.game-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+  pointer-events: none;
+}
+
+/* ============ MENU SCREEN ============ */
+
+.menu-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  z-index: 1;
+}
+
+.menu-title {
+  font-family: 'MedievalSharp', cursive;
+  font-size: 72px;
+  color: var(--text-gold);
+  text-shadow:
+    0 2px 4px rgba(0,0,0,0.5),
+    0 0 40px rgba(212, 168, 85, 0.3);
+  letter-spacing: 8px;
+}
+
+.menu-subtitle {
+  font-size: 16px;
+  color: var(--text-light);
+  opacity: 0.7;
+  margin-top: -20px;
+  letter-spacing: 4px;
+}
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 320px;
+}
+
+.menu-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px 32px;
+  border: 2px solid var(--text-gold);
+  background: linear-gradient(135deg, rgba(92, 51, 23, 0.8), rgba(62, 31, 13, 0.9));
+  color: var(--text-gold);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-btn:hover {
+  background: linear-gradient(135deg, rgba(212, 168, 85, 0.2), rgba(212, 168, 85, 0.1));
+  box-shadow: 0 0 20px rgba(212, 168, 85, 0.3);
+  transform: translateY(-2px);
+}
+
+.menu-btn:active {
+  transform: translateY(0);
+}
+
+.menu-btn.back-btn {
+  border-color: var(--text-light);
+  color: var(--text-light);
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.menu-btn.back-btn:hover {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(245, 230, 211, 0.1), rgba(245, 230, 211, 0.05));
+  box-shadow: 0 0 20px rgba(245, 230, 211, 0.2);
+}
+
+/* Difficulty select */
+.difficulty-select {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.difficulty-label {
+  font-size: 14px;
+  color: var(--text-light);
+  opacity: 0.8;
+  letter-spacing: 3px;
+  margin-bottom: 4px;
+}
+
+.difficulty-options {
+  display: flex;
+  gap: 12px;
+}
+
+.diff-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  padding: 8px 20px;
+  border: 1px solid var(--text-gold);
+  background: transparent;
+  color: var(--text-gold);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.diff-btn:hover,
+.diff-btn.active {
+  background: rgba(212, 168, 85, 0.2);
+  box-shadow: 0 0 10px rgba(212, 168, 85, 0.2);
+}
+
+.diff-btn.active {
+  background: rgba(212, 168, 85, 0.3);
+  font-weight: 700;
+}
+
+/* ============ ONLINE LOBBY ============ */
+
+.lobby-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  z-index: 1;
+}
+
+.lobby-title {
+  font-family: 'MedievalSharp', cursive;
+  font-size: 36px;
+  color: var(--text-gold);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.lobby-info {
+  font-size: 14px;
+  color: var(--text-light);
+  opacity: 0.8;
+  text-align: center;
+  line-height: 1.8;
+}
+
+.room-code {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-gold);
+  letter-spacing: 8px;
+  padding: 16px 32px;
+  border: 2px solid var(--text-gold);
+  background: rgba(62, 31, 13, 0.8);
+}
+
+.lobby-input {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 16px 32px;
+  border: 2px solid var(--text-gold);
+  background: linear-gradient(135deg, rgba(92, 51, 23, 0.8), rgba(62, 31, 13, 0.9));
+  color: var(--text-gold);
+  text-align: center;
+  letter-spacing: 4px;
+  width: 100%;
+  outline: none;
+}
+
+.lobby-input::placeholder {
+  color: rgba(212, 168, 85, 0.4);
+  letter-spacing: 2px;
+  font-size: 14px;
+}
+
+.lobby-input:focus {
+  box-shadow: 0 0 15px rgba(212, 168, 85, 0.3);
+}
+
+.lobby-status {
+  font-size: 14px;
+  color: var(--text-gold);
+  opacity: 0.8;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.lobby-error {
+  font-size: 14px;
+  color: #e74c3c;
+}
+
+.lobby-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 320px;
+}
+
+/* ============ GAME BOARD ============ */
+
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  z-index: 1;
+  width: 100%;
+  max-width: 900px;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 10px;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.player-name {
+  font-size: 14px;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+.player-name.active {
+  color: var(--text-gold);
+  opacity: 1;
+  text-shadow: 0 0 10px rgba(212, 168, 85, 0.3);
+}
+
+.player-score {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-gold);
+}
+
+.turn-indicator {
+  font-size: 14px;
+  letter-spacing: 3px;
+  color: var(--text-gold);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.game-status {
+  font-family: 'MedievalSharp', cursive;
+  font-size: 24px;
+  color: var(--text-gold);
+  text-shadow: 0 0 20px rgba(212, 168, 85, 0.4);
+}
+
+/* Board */
+.board-wrapper {
+  width: 100%;
+  perspective: 800px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: 100px 1fr 100px;
+  grid-template-rows: 1fr 1fr;
+  gap: 0;
+  background: linear-gradient(135deg, #6B3A1F, #5C3317, #4A2810);
+  border: 6px solid var(--board-border);
+  border-radius: 60px;
+  padding: 20px;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.6),
+    inset 0 2px 4px rgba(255,255,255,0.1),
+    inset 0 -2px 4px rgba(0,0,0,0.3);
+  position: relative;
+  min-height: 220px;
+}
+
+/* Wood grain overlay */
+.board::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 54px;
+  background:
+    repeating-linear-gradient(
+      87deg,
+      transparent,
+      transparent 8px,
+      rgba(0,0,0,0.03) 8px,
+      rgba(0,0,0,0.03) 9px
+    );
+  pointer-events: none;
+}
+
+/* Stores */
+.store {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50px;
+  background: radial-gradient(ellipse at center, var(--pit-inner), var(--pit-bg));
+  border: 3px solid var(--pit-border);
+  box-shadow:
+    inset 0 4px 12px rgba(0,0,0,0.5),
+    inset 0 -2px 4px rgba(255,255,255,0.05);
+  position: relative;
+  min-height: 160px;
+  padding: 10px;
+}
+
+.store-p1 {
+  grid-column: 3;
+  grid-row: 1 / 3;
+}
+
+.store-p2 {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+
+.store-count {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-gold);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+
+.store-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.store-shells {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  max-width: 70px;
+  z-index: 1;
+}
+
+/* Pit rows */
+.pit-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 5px 10px;
+  grid-column: 2;
+}
+
+.pit-row-top {
+  grid-row: 1;
+}
+
+.pit-row-bottom {
+  grid-row: 2;
+}
+
+/* Individual pit */
+.pit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 40%, var(--pit-inner), var(--pit-bg));
+  border: 2px solid var(--pit-border);
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,0.5),
+    inset 0 -1px 3px rgba(255,255,255,0.05);
+  cursor: default;
+  transition: all 0.3s ease;
+  position: relative;
+  user-select: none;
+}
+
+.pit.clickable {
+  cursor: pointer;
+}
+
+.pit.clickable:hover {
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,0.5),
+    0 0 20px var(--hover-glow),
+    0 0 40px rgba(212, 168, 85, 0.15);
+  border-color: var(--text-gold);
+  transform: scale(1.05);
+}
+
+.pit.clickable:active {
+  transform: scale(0.98);
+}
+
+.pit.last-move {
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,0.5),
+    0 0 15px rgba(212, 168, 85, 0.25);
+  border-color: rgba(212, 168, 85, 0.5);
+}
+
+.pit-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+  z-index: 4;
+  position: absolute;
+  top: -6px;
+  right: -2px;
+  background: rgba(30, 14, 5, 0.9);
+  border: 1.5px solid var(--text-gold);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.pit-shells {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  max-width: 55px;
+  z-index: 1;
+}
+
+/* Shells */
+.shell {
+  width: 10px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 30% 30%, #FFFEF5, var(--shell-color), var(--shell-shadow));
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.shell.in-store {
+  width: 8px;
+  height: 6px;
+}
+
+/* Animation for dropping shells */
+.pit.animating {
+  animation: pitGlow 0.3s ease;
+}
+
+@keyframes pitGlow {
+  0% { box-shadow: inset 0 3px 8px rgba(0,0,0,0.5); }
+  50% { box-shadow: inset 0 3px 8px rgba(0,0,0,0.5), 0 0 20px rgba(212, 168, 85, 0.4); }
+  100% { box-shadow: inset 0 3px 8px rgba(0,0,0,0.5); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* ============ GAME OVER MODAL ============ */
+
+.game-over-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.game-over-modal {
+  background: linear-gradient(135deg, #5C3317, #3E1F0D);
+  border: 3px solid var(--text-gold);
+  padding: 48px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 0 60px rgba(212, 168, 85, 0.2);
+  animation: scaleIn 0.4s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.game-over-title {
+  font-family: 'MedievalSharp', cursive;
+  font-size: 36px;
+  color: var(--text-gold);
+  text-shadow: 0 0 20px rgba(212, 168, 85, 0.4);
+}
+
+.game-over-scores {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+}
+
+.game-over-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.game-over-player-label {
+  font-size: 14px;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+.game-over-player-score {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-gold);
+}
+
+.game-over-player.winner .game-over-player-score {
+  text-shadow: 0 0 20px rgba(212, 168, 85, 0.6);
+}
+
+.game-over-vs {
+  font-size: 20px;
+  opacity: 0.5;
+}
+
+.game-over-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+/* ============ GAME CONTROLS ============ */
+
+.game-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.control-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  padding: 8px 16px;
+  border: 1px solid rgba(245, 230, 211, 0.3);
+  background: rgba(62, 31, 13, 0.6);
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+
+.control-btn:hover {
+  opacity: 1;
+  border-color: var(--text-light);
+  background: rgba(62, 31, 13, 0.9);
+}
+
+/* ============ BURNT PITS (SUNOG) ============ */
+
+.pit.burnt {
+  background: radial-gradient(ellipse at 40% 40%, #1a0e08, #0d0704);
+  border: 2px solid #2a1509;
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,0.7),
+    inset 0 -1px 3px rgba(0,0,0,0.3);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.pit.burnt:hover {
+  transform: none;
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,0.7),
+    inset 0 -1px 3px rgba(0,0,0,0.3);
+  border-color: #2a1509;
+}
+
+.burnt-mark {
+  font-size: 28px;
+  font-weight: 700;
+  color: #8B0000;
+  text-shadow: 0 0 8px rgba(139, 0, 0, 0.4);
+  opacity: 0.8;
+  z-index: 2;
+}
+
+/* ============ ROUND INDICATOR ============ */
+
+.round-indicator {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-gold);
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+
+/* ============ ROUND OVER HINT ============ */
+
+.round-over-hint {
+  font-size: 13px;
+  color: var(--text-light);
+  opacity: 0.7;
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* ============ BURNT PIT INFO IN MODAL ============ */
+
+.game-over-burnt-info {
+  font-size: 11px;
+  color: #8B0000;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+/* ============ RESPONSIVE ============ */
+
+@media (max-width: 768px) {
+  .menu-title {
+    font-size: 48px;
+  }
+
+  .board {
+    grid-template-columns: 70px 1fr 70px;
+    padding: 12px;
+    border-radius: 40px;
+    border-width: 4px;
+    min-height: 180px;
+  }
+
+  .board::before {
+    border-radius: 36px;
+  }
+
+  .pit {
+    width: 56px;
+    height: 56px;
+  }
+
+  .pit-count {
+    font-size: 12px;
+  }
+
+  .store {
+    min-height: 130px;
+    border-radius: 35px;
+  }
+
+  .store-count {
+    font-size: 24px;
+  }
+
+  .game-over-modal {
+    padding: 32px 40px;
+  }
+}
+
+@media (max-width: 580px) {
+  .board {
+    grid-template-columns: 55px 1fr 55px;
+    padding: 8px;
+    border-radius: 30px;
+    min-height: 150px;
+  }
+
+  .board::before {
+    border-radius: 26px;
+  }
+
+  .pit {
+    width: 40px;
+    height: 40px;
+  }
+
+  .pit-count {
+    font-size: 13px;
+  }
+
+  .store {
+    min-height: 100px;
+    border-radius: 25px;
+  }
+
+  .store-count {
+    font-size: 20px;
+  }
+
+  .shell {
+    width: 6px;
+    height: 5px;
+  }
+
+  .pit-row {
+    padding: 3px 4px;
+  }
+
+  .burnt-mark {
+    font-size: 18px;
+  }
+}
+
+/* ============ LANDSCAPE PHONE ============ */
+/* Targets phones in landscape: wide but very short (max-height ~450px) */
+/* Strategy: size everything relative to viewport height so the board */
+/* fills the screen vertically while maintaining natural proportions.  */
+
+@media (max-height: 450px) and (orientation: landscape) {
+  /* --- Global containers --- */
+  body {
+    overflow-y: hidden;
+  }
+
+  .game-container {
+    min-height: 100dvh;
+    height: 100dvh;
+    padding: 1dvh 12px;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* --- Menu screen --- */
+  .menu-screen {
+    gap: 3dvh;
+  }
+
+  .menu-title {
+    font-size: clamp(24px, 8dvh, 40px);
+    letter-spacing: 4px;
+  }
+
+  .menu-subtitle {
+    font-size: clamp(9px, 2.5dvh, 13px);
+    margin-top: -1dvh;
+    letter-spacing: 2px;
+  }
+
+  .menu-options {
+    width: 280px;
+    gap: 1.5dvh;
+  }
+
+  .menu-btn {
+    font-size: clamp(11px, 3dvh, 15px);
+    padding: 1.5dvh 24px;
+    letter-spacing: 1px;
+  }
+
+  .menu-btn.back-btn {
+    font-size: clamp(10px, 2.5dvh, 13px);
+  }
+
+  .difficulty-select {
+    gap: 1.5dvh;
+  }
+
+  .difficulty-label {
+    font-size: clamp(10px, 2.5dvh, 13px);
+    margin-bottom: 0;
+  }
+
+  .difficulty-options {
+    gap: 8px;
+  }
+
+  .diff-btn {
+    font-size: clamp(10px, 2.5dvh, 13px);
+    padding: 1dvh 16px;
+  }
+
+  /* --- Online lobby --- */
+  .lobby-screen {
+    gap: 2.5dvh;
+  }
+
+  .lobby-title {
+    font-size: clamp(20px, 6dvh, 30px);
+  }
+
+  .lobby-info {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .room-code {
+    font-size: clamp(20px, 6dvh, 30px);
+    padding: 1.5dvh 24px;
+    letter-spacing: 6px;
+  }
+
+  .lobby-input {
+    font-size: 15px;
+    padding: 1.5dvh 16px;
+  }
+
+  .lobby-actions {
+    width: 240px;
+    gap: 1.5dvh;
+  }
+
+  /* --- Game screen layout --- */
+  .game-screen {
+    gap: 1dvh;
+    width: auto;
+    max-width: 95vw;
+    height: 98dvh;
+    justify-content: center;
+  }
+
+  /* --- Game header --- */
+  .game-header {
+    padding: 0 4px;
+  }
+
+  .player-info {
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .player-name {
+    font-size: clamp(10px, 2.8dvh, 13px);
+    letter-spacing: 1px;
+  }
+
+  .player-score {
+    font-size: clamp(16px, 4.5dvh, 24px);
+  }
+
+  .turn-indicator {
+    font-size: clamp(9px, 2.5dvh, 12px);
+    letter-spacing: 2px;
+  }
+
+  .game-status {
+    font-size: clamp(14px, 4dvh, 20px);
+  }
+
+  .round-indicator {
+    font-size: clamp(9px, 2.5dvh, 11px);
+    letter-spacing: 2px;
+    margin-bottom: 0;
+  }
+
+  /* --- Board --- */
+  .board-wrapper {
+    perspective: 600px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .board {
+    /* Use auto for center column so it shrinks to fit the pits */
+    grid-template-columns: clamp(50px, 15dvh, 90px) auto clamp(50px, 15dvh, 90px);
+    padding: 1.2dvh 2.5dvh;
+    border-radius: clamp(18px, 6dvh, 40px);
+    border-width: 3px;
+    min-height: auto;
+    gap: 0;
+    width: auto;
+    max-width: 95vw;
+  }
+
+  .board::before {
+    border-radius: clamp(14px, 5.5dvh, 36px);
+  }
+
+  /* --- Stores --- */
+  .store {
+    min-height: auto;
+    padding: 1dvh 4px;
+    border-radius: clamp(14px, 5dvh, 35px);
+    border-width: 2px;
+  }
+
+  .store-count {
+    font-size: clamp(18px, 6dvh, 30px);
+  }
+
+  .store-label {
+    font-size: clamp(7px, 2dvh, 10px);
+    letter-spacing: 1px;
+    margin-top: 1px;
+  }
+
+  .store-shells {
+    max-width: clamp(40px, 13dvh, 70px);
+    gap: 1px;
+  }
+
+  /* --- Pit rows --- */
+  .pit-row {
+    padding: 0.5dvh 0;
+    justify-content: center;
+    gap: 1.5dvh;
+  }
+
+  /* --- Pits --- */
+  .pit {
+    width: clamp(36px, 11dvh, 70px);
+    height: clamp(36px, 11dvh, 70px);
+    flex-shrink: 0;
+  }
+
+  .pit-count {
+    font-size: clamp(10px, 3dvh, 14px);
+    width: clamp(17px, 5dvh, 24px);
+    height: clamp(17px, 5dvh, 24px);
+    top: -4px;
+    right: -4px;
+  }
+
+  .pit-shells {
+    max-width: clamp(26px, 8dvh, 50px);
+    gap: 1px;
+  }
+
+  /* --- Shells --- */
+  .shell {
+    width: clamp(5px, 1.8dvh, 9px);
+    height: clamp(4px, 1.4dvh, 7px);
+  }
+
+  .shell.in-store {
+    width: clamp(4px, 1.5dvh, 7px);
+    height: clamp(3px, 1.2dvh, 5px);
+  }
+
+  /* --- Burnt pits --- */
+  .burnt-mark {
+    font-size: clamp(14px, 4.5dvh, 24px);
+  }
+
+  /* --- Game controls --- */
+  .game-controls {
+    gap: 8px;
+  }
+
+  .control-btn {
+    font-size: clamp(9px, 2.5dvh, 12px);
+    padding: 0.8dvh 12px;
+  }
+
+  /* --- Round over hint --- */
+  .round-over-hint {
+    font-size: clamp(10px, 2.5dvh, 13px);
+    margin-top: 0;
+  }
+
+  /* --- Game over modal --- */
+  .game-over-modal {
+    padding: 3dvh 32px;
+    gap: 2dvh;
+  }
+
+  .game-over-title {
+    font-size: clamp(18px, 6dvh, 30px);
+  }
+
+  .game-over-scores {
+    gap: 24px;
+  }
+
+  .game-over-player {
+    gap: 1dvh;
+  }
+
+  .game-over-player-label {
+    font-size: clamp(10px, 2.8dvh, 13px);
+  }
+
+  .game-over-player-score {
+    font-size: clamp(24px, 7dvh, 40px);
+  }
+
+  .game-over-vs {
+    font-size: clamp(12px, 3.5dvh, 18px);
+  }
+
+  .game-over-actions {
+    gap: 10px;
+    margin-top: 1dvh;
+  }
+
+  .game-over-burnt-info {
+    font-size: clamp(9px, 2.5dvh, 11px);
+    margin-top: 0;
+  }
+}
+
+/* Extra-short landscape phones (e.g., older iPhones, small Androids ~320px tall) */
+/* Overrides: tighter spacing, hide non-essential elements */
+@media (max-height: 360px) and (orientation: landscape) {
+  .game-container {
+    padding: 0 8px;
+  }
+
+  .game-screen {
+    gap: 0.5dvh;
+  }
+
+  .game-header {
+    padding: 0;
+  }
+
+  .store-label {
+    display: none;
+  }
+
+  .game-over-modal {
+    padding: 2dvh 24px;
+    gap: 1.5dvh;
+  }
+
+  .game-over-actions .menu-btn {
+    font-size: clamp(10px, 3dvh, 13px);
+    padding: 1dvh 16px;
+  }
+
+  /* Menu in extra-short landscape */
+  .menu-screen {
+    gap: 2dvh;
+  }
+
+  .menu-subtitle {
+    margin-top: -0.5dvh;
+  }
+}
