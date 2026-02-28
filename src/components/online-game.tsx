@@ -12,7 +12,7 @@ import Board from "./board";
 import GameOverModal from "./game-over-modal";
 
 const SERVER_URL: string =
-  import.meta.env.VITE_SERVER_URL || "http://localhost:3001";
+  import.meta.env.VITE_SERVER_URL || (import.meta.env.PROD ? "" : "http://localhost:3001");
 
 type OnlineScreen = "lobby" | "waiting" | "playing";
 

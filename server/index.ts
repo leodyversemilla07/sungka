@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import {
   createInitialState,
   getValidMoves,
@@ -12,13 +13,14 @@ import {
 } from "../src/game/sungka-engine";
 import type { GameState, Player } from "../src/game/sungka-engine";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const app = express();
-app.use(cors());
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "*",
+    origin: process.env.NODE_ENV === "production" ? false : "*",
     methods: ["GET", "POST"],
   },
 });
@@ -164,9 +166,18 @@ io.on("connection", (baseSocket: Socket) => {
   });
 });
 
+// Serve static files from Vite build in production
+const distPath = path.join(__dirname, "..", "dist");
+app.use(express.static(distPath));
+
 // Health check
-app.get("/", (_req: Request, _res: Response) => {
+app.get("/api/health", (_req: Request, _res: Response) => {
   _res.json({ status: "Sungka server running", rooms: rooms.size });
+});
+
+// SPA fallback — serve index.html for all non-API/non-static routes
+app.get("*", (_req: Request, _res: Response) => {
+  _res.sendFile(path.join(distPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 3001;
