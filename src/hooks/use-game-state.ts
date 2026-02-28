@@ -11,7 +11,7 @@ import {
   PLAYER_2,
 } from "../game/sungka-engine";
 import type { GameState, AnimationStep } from "../game/sungka-engine";
-import { getAIMove } from "../game/sungka-ai";
+import { getAIMoveAsync, terminateAIWorker } from "../game/ai-worker-client";
 import type { Difficulty } from "../game/sungka-ai";
 
 export type GameMode = "local" | "ai" | "online";
@@ -126,11 +126,12 @@ export function useGameState(
     animTimers.current = [];
   };
 
-  // Clean up all timers on unmount to prevent state updates on unmounted component
+  // Clean up all timers and worker on unmount
   useEffect(() => {
     return () => {
       clearTimers();
       if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+      terminateAIWorker();
     };
   }, []);
 
@@ -294,7 +295,7 @@ export function useGameState(
     ],
   );
 
-  // AI turn (normal phase only, not first move)
+  // AI turn (normal phase only, not first move) — runs in Web Worker
   useEffect(() => {
     if (
       mode === "ai" &&
@@ -304,15 +305,24 @@ export function useGameState(
       gameState.currentPlayer === PLAYER_2 &&
       !animating
     ) {
+      let cancelled = false;
+
       aiTimeoutRef.current = setTimeout(() => {
-        const aiMove = getAIMove(gameState, difficulty);
-        if (aiMove !== null) {
-          const result = makeMove(gameState, aiMove);
-          if (result) {
-            animateSteps(result.steps, result.state, 140);
+        getAIMoveAsync(gameState, difficulty).then((aiMove) => {
+          if (cancelled) return;
+          if (aiMove !== null) {
+            const result = makeMove(gameState, aiMove);
+            if (result) {
+              animateSteps(result.steps, result.state, 140);
+            }
           }
-        }
+        });
       }, 600);
+
+      return () => {
+        cancelled = true;
+        if (aiTimeoutRef.current) clearTimeout(aiTimeoutRef.current);
+      };
     }
 
     return () => {
