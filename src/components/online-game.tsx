@@ -5,6 +5,7 @@ import {
   PLAYER_2,
   createInitialState,
   getValidMoves,
+  getValidMovesForPlayer,
   getScore,
 } from "../game/sungka-engine";
 import type { GameState, Player, AnimationStep } from "../game/sungka-engine";
@@ -26,10 +27,13 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
   const [inputCode, setInputCode] = useState("");
   const [playerNumber, setPlayerNumber] = useState<Player | null>(null);
   const [gameState, setGameState] = useState<GameState>(createInitialState());
+  const [displayPits, setDisplayPits] = useState<number[] | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [animatingPit, setAnimatingPit] = useState<number | null>(null);
+  const [animating, setAnimating] = useState(false);
   const [showRoundOver, setShowRoundOver] = useState(false);
+  const [openingMoveSubmitted, setOpeningMoveSubmitted] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const animTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -71,9 +75,13 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
 
     socket.on("game-start", ({ state }: { state: GameState }) => {
       setGameState(state);
+      setDisplayPits(null);
       setScreen("playing");
       setMessage("");
       setShowRoundOver(false);
+      setOpeningMoveSubmitted(false);
+      setAnimating(false);
+      setAnimatingPit(null);
     });
 
     socket.on(
@@ -81,12 +89,16 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
       ({ state, steps }: { state: GameState; steps: AnimationStep[] }) => {
         // Clear any in-flight animation timers before starting new ones
         clearAnimTimers();
+        setOpeningMoveSubmitted(false);
+        setAnimating(true);
 
         let delay = 0;
         const stepTime = 80;
         steps.forEach((step) => {
           const t = setTimeout(() => {
+            setDisplayPits([...step.pits]);
             if (step.type === "drop") setAnimatingPit(step.pit ?? null);
+            if (step.type === "pickup") setAnimatingPit(step.pit ?? null);
             if (step.type === "capture") {
               setMessage("Capture!");
               const mt = setTimeout(() => setMessage(""), 1500);
@@ -104,6 +116,8 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
 
         const finalTimer = setTimeout(() => {
           setGameState(state);
+          setDisplayPits(null);
+          setAnimating(false);
           setAnimatingPit(null);
           if (state.roundOver) {
             setShowRoundOver(true);
@@ -112,6 +126,11 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
         animTimers.current.push(finalTimer);
       },
     );
+
+    socket.on("first-move-selected", () => {
+      setOpeningMoveSubmitted(true);
+      setError("");
+    });
 
     socket.on("opponent-disconnected", () => {
       setMessage("Opponent disconnected");
@@ -146,6 +165,20 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
   const handleMove = useCallback(
     (pitIndex: number): void => {
       if (gameState.gameOver || gameState.roundOver) return;
+
+      if (gameState.isFirstMove) {
+        if (!playerNumber || openingMoveSubmitted) return;
+
+        const validMoves = getValidMovesForPlayer(gameState, playerNumber);
+        if (!validMoves.includes(pitIndex)) return;
+
+        socketRef.current?.emit("select-first-move", {
+          roomCode,
+          pitIndex,
+        });
+        return;
+      }
+
       if (gameState.currentPlayer !== playerNumber) return;
 
       const validMoves = getValidMoves(gameState);
@@ -156,7 +189,7 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
         pitIndex,
       });
     },
-    [gameState, playerNumber, roomCode],
+    [gameState, openingMoveSubmitted, playerNumber, roomCode],
   );
 
   const handleNextRound = useCallback(() => {
@@ -167,12 +200,21 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
     socketRef.current?.emit("play-again", { roomCode });
   }, [roomCode]);
 
-  const p1Score = getScore(gameState, PLAYER_1);
-  const p2Score = getScore(gameState, PLAYER_2);
+  const displayedGameState: GameState = displayPits
+    ? { ...gameState, pits: displayPits }
+    : gameState;
+  const p1Score = getScore(displayedGameState, PLAYER_1);
+  const p2Score = getScore(displayedGameState, PLAYER_2);
   const validMoves: number[] =
-    gameState.currentPlayer === playerNumber && !gameState.roundOver
-      ? getValidMoves(gameState)
-      : [];
+    animating || gameState.roundOver
+      ? []
+      : gameState.isFirstMove
+        ? !playerNumber || openingMoveSubmitted
+          ? []
+          : getValidMovesForPlayer(gameState, playerNumber)
+        : gameState.currentPlayer === playerNumber
+          ? getValidMoves(gameState)
+          : [];
 
   if (screen === "lobby") {
     return (
@@ -230,6 +272,10 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
   const getTurnText = (): string => {
     if (gameState.gameOver || gameState.matchOver) return "";
     if (gameState.roundOver) return "";
+    if (gameState.isFirstMove) {
+      if (openingMoveSubmitted) return "Waiting for opponent's opening move";
+      return "Choose your opening pit";
+    }
     if (gameState.currentPlayer === playerNumber) return "Your Turn";
     return "Opponent's Turn";
   };
@@ -272,7 +318,7 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
       </div>
 
       <Board
-        gameState={gameState}
+        gameState={displayedGameState}
         onPitClick={handleMove}
         validMoves={validMoves}
         animatingPit={animatingPit}

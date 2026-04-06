@@ -3,11 +3,8 @@ import type { Player } from "../game/sungka-engine";
 import type { Difficulty } from "../game/sungka-ai";
 import type { GameMode } from "../hooks/use-game-state";
 import { useGameState, loadSession } from "../hooks/use-game-state";
-import { useRef } from "react";
 import Board from "./board";
 import GameOverModal from "./game-over-modal";
-
-const UNSET = Symbol("unset");
 
 interface GameScreenProps {
   mode: GameMode;
@@ -20,15 +17,8 @@ export default function GameScreen({
   difficulty,
   onMainMenu,
 }: GameScreenProps) {
-  // Lazy-init: loadSession() is only called on the very first render
-  const restoredRef = useRef<ReturnType<typeof loadSession> | typeof UNSET>(
-    UNSET,
-  );
-  if (restoredRef.current === UNSET) {
-    restoredRef.current = loadSession();
-  }
-  const restored =
-    restoredRef.current?.mode === mode ? restoredRef.current : null;
+  const restoredSession = loadSession();
+  const restored = restoredSession?.mode === mode ? restoredSession : null;
 
   const {
     gameState,

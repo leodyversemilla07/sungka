@@ -6,7 +6,9 @@ import { fileURLToPath } from "url";
 import {
   createInitialState,
   getValidMoves,
+  getValidMovesForPlayer,
   makeMove,
+  makeSimultaneousFirstMove,
   calculateNextRound,
   PLAYER_1,
   PLAYER_2,
@@ -30,6 +32,7 @@ const io = new Server(httpServer, {
 interface Room {
   players: string[];
   state: GameState;
+  firstMovePicks: Partial<Record<Player, number>>;
 }
 
 interface SocketWithRoom extends Socket {
@@ -48,6 +51,29 @@ function generateRoomCode(): string {
   return code;
 }
 
+function getRoomForSocket(
+  socket: SocketWithRoom,
+  roomCode: string,
+): Room | null {
+  if (!socket.roomCode || socket.roomCode !== roomCode) {
+    socket.emit("error", { message: "You are not part of this room" });
+    return null;
+  }
+
+  const room = rooms.get(roomCode);
+  if (!room) {
+    socket.emit("error", { message: "Room not found" });
+    return null;
+  }
+
+  if (!socket.id || !room.players.includes(socket.id)) {
+    socket.emit("error", { message: "You are not part of this room" });
+    return null;
+  }
+
+  return room;
+}
+
 io.on("connection", (baseSocket: Socket) => {
   const socket = baseSocket as SocketWithRoom;
   console.log(`[Sungka] Player connected: ${socket.id ?? "unknown"}`);
@@ -64,6 +90,7 @@ io.on("connection", (baseSocket: Socket) => {
     rooms.set(code, {
       players: [socketId],
       state: createInitialState(),
+      firstMovePicks: {},
     });
 
     void socket.join(code);
@@ -75,7 +102,8 @@ io.on("connection", (baseSocket: Socket) => {
   });
 
   socket.on("join-room", ({ roomCode }: { roomCode: string }) => {
-    const room = rooms.get(roomCode);
+    const normalizedRoomCode = roomCode.trim().toUpperCase();
+    const room = rooms.get(normalizedRoomCode);
 
     if (!room) {
       socket.emit("error", { message: "Room not found" });
@@ -91,21 +119,63 @@ io.on("connection", (baseSocket: Socket) => {
     if (!socketId) return;
 
     room.players.push(socketId);
-    void socket.join(roomCode);
-    socket.roomCode = roomCode;
+    void socket.join(normalizedRoomCode);
+    socket.roomCode = normalizedRoomCode;
     socket.playerNumber = PLAYER_2;
 
-    socket.emit("room-joined", { roomCode, player: PLAYER_2 });
+    socket.emit("room-joined", { roomCode: normalizedRoomCode, player: PLAYER_2 });
 
     // Start the game
-    io.to(roomCode).emit("game-start", { state: room.state });
-    console.log(`[Sungka] Player ${socketId} joined room ${roomCode}`);
+    io.to(normalizedRoomCode).emit("game-start", { state: room.state });
+    console.log(`[Sungka] Player ${socketId} joined room ${normalizedRoomCode}`);
   });
+
+  socket.on(
+    "select-first-move",
+    ({ roomCode, pitIndex }: { roomCode: string; pitIndex: number }) => {
+      if (!socket.playerNumber) return;
+      const room = getRoomForSocket(socket, roomCode);
+      if (!room) return;
+      if (!room.state.isFirstMove) return;
+
+      const validMoves = getValidMovesForPlayer(room.state, socket.playerNumber);
+      if (!validMoves.includes(pitIndex)) {
+        socket.emit("error", { message: "Invalid opening pit" });
+        return;
+      }
+
+      room.firstMovePicks[socket.playerNumber] = pitIndex;
+      socket.emit("first-move-selected");
+
+      const p1Pit = room.firstMovePicks[PLAYER_1];
+      const p2Pit = room.firstMovePicks[PLAYER_2];
+
+      if (p1Pit === undefined || p2Pit === undefined) {
+        return;
+      }
+
+      const result = makeSimultaneousFirstMove(room.state, p1Pit, p2Pit);
+      room.firstMovePicks = {};
+
+      if (!result) {
+        io.to(roomCode).emit("error", {
+          message: "Could not resolve the opening move",
+        });
+        return;
+      }
+
+      room.state = result.state;
+      io.to(roomCode).emit("move-made", {
+        state: result.state,
+        steps: result.steps,
+      });
+    },
+  );
 
   socket.on(
     "make-move",
     ({ roomCode, pitIndex }: { roomCode: string; pitIndex: number }) => {
-      const room = rooms.get(roomCode);
+      const room = getRoomForSocket(socket, roomCode);
       if (!room) return;
 
       // Validate it's this player's turn
@@ -135,7 +205,7 @@ io.on("connection", (baseSocket: Socket) => {
   );
 
   socket.on("next-round", ({ roomCode }: { roomCode: string }) => {
-    const room = rooms.get(roomCode);
+    const room = getRoomForSocket(socket, roomCode);
     if (!room) return;
 
     if (!room.state.roundOver) return;
@@ -143,14 +213,16 @@ io.on("connection", (baseSocket: Socket) => {
     const nextState = calculateNextRound(room.state);
 
     room.state = nextState;
+    room.firstMovePicks = {};
     io.to(roomCode).emit("game-start", { state: room.state });
   });
 
   socket.on("play-again", ({ roomCode }: { roomCode: string }) => {
-    const room = rooms.get(roomCode);
+    const room = getRoomForSocket(socket, roomCode);
     if (!room) return;
 
     room.state = createInitialState();
+    room.firstMovePicks = {};
     io.to(roomCode).emit("game-start", { state: room.state });
   });
 
@@ -159,8 +231,11 @@ io.on("connection", (baseSocket: Socket) => {
     if (socket.roomCode) {
       const room = rooms.get(socket.roomCode);
       if (room) {
+        room.players = room.players.filter((playerId) => playerId !== socket.id);
         socket.to(socket.roomCode).emit("opponent-disconnected");
-        rooms.delete(socket.roomCode);
+        if (room.players.length === 0) {
+          rooms.delete(socket.roomCode);
+        }
       }
     }
   });
@@ -176,7 +251,7 @@ app.get("/api/health", (_req: Request, _res: Response) => {
 });
 
 // SPA fallback — serve index.html for all non-API/non-static routes
-app.get("*", (_req: Request, _res: Response) => {
+app.get("/{*path}", (_req: Request, _res: Response) => {
   _res.sendFile(path.join(distPath, "index.html"));
 });
 

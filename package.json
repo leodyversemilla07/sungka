@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
     "preview": "vite preview",
     "server": "npx tsx server/index.ts",
     "start": "NODE_ENV=production node --import tsx server/index.ts",
@@ -22,18 +23,14 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
     "@types/express": "^5.0.6",
-    "@types/react": "^19.2.5",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@biomejs/biome": "^2.4.10",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.2.4",
-    "vitest": "^4.0.18"
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
   }
 }

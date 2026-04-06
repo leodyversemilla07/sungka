@@ -35,7 +35,7 @@ After each round, players redistribute shells from their stores back into their 
 | Layer    | Technology                        |
 | -------- | --------------------------------- |
 | Frontend | React 19, TypeScript (strict)     |
-| Bundler  | Vite 7                            |
+| Bundler  | Vite 8                            |
 | Server   | Express 5, Socket.IO 4            |
 | Styling  | Vanilla CSS (custom properties)   |
 | Fonts    | Cinzel, MedievalSharp (Google)    |
@@ -66,7 +66,7 @@ sungka/
 ├── vite.config.ts
 ├── tsconfig.json                   # Client TypeScript config
 ├── tsconfig.server.json            # Server TypeScript config
-├── eslint.config.js
+├── biome.json
 └── package.json
 ```
 
@@ -123,6 +123,12 @@ npm run preview
 
 ```bash
 npm run lint
+```
+
+### Format
+
+```bash
+npm run format
 ```
 
 ### Type Check
