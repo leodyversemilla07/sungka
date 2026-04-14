@@ -28,7 +28,9 @@ After each round, players redistribute shells from their stores back into their 
 - **Online multiplayer**: Socket.IO rooms with 5-character codes
 - **Game persistence**: local/AI games auto-save to localStorage and restore on page reload
 - **Mobile landscape optimized**: responsive layout using `dvh` units and `clamp()` sizing
-- **Traditional wooden aesthetic**: dark wood textures, cowrie shell dots, gold accents
+- **Traditional wooden aesthetic**: dark wood textures, carved pits, ceremonial status plaque, and gold accents
+- **Accessibility enhancements**: keyboard-playable pits (Enter/Space), semantic landmarks, contextual ARIA labels, and screen-reader live announcements for turn/capture/round/match events
+- **Motion preferences respected**: `prefers-reduced-motion` and `prefers-contrast` support
 
 ## Tech Stack
 
@@ -125,6 +127,12 @@ npm run preview
 npm run lint
 ```
 
+### Test
+
+```bash
+npm run test
+```
+
 ### Format
 
 ```bash
@@ -153,6 +161,12 @@ npx tsc --project tsconfig.server.json --noEmit
 - Indices 0 and 8 are stores; indices 1-7 are Player 1's pits; indices 9-15 are Player 2's pits.
 - Sowing direction is counter-clockwise, skipping the opponent's store.
 - Opposite pit formula: `16 - pitIndex`.
+
+## Accessibility Notes
+
+- Pits can be played with keyboard using **Tab** to focus and **Enter/Space** to move.
+- Live region announcements describe turn state, captures, round outcomes, and match outcomes.
+- Labels adapt by mode (e.g., **You/AI** or **You/Opponent**) for clearer assistive output.
 
 ## License
 

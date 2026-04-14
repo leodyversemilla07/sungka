@@ -218,7 +218,7 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
 
   if (screen === "lobby") {
     return (
-      <div className="lobby-screen">
+      <main className="lobby-screen" role="main" aria-label="Online lobby">
         <h2 className="lobby-title">Online Play</h2>
         <div className="lobby-actions">
           <button className="menu-btn" onClick={createRoom}>
@@ -243,13 +243,17 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
         <button className="menu-btn back-btn" onClick={onMainMenu}>
           Back
         </button>
-      </div>
+      </main>
     );
   }
 
   if (screen === "waiting") {
     return (
-      <div className="lobby-screen">
+      <main
+        className="lobby-screen"
+        role="main"
+        aria-label="Waiting for opponent"
+      >
         <h2 className="lobby-title">Waiting for Opponent</h2>
         <p className="lobby-info">Share this room code:</p>
         <div className="room-code">{roomCode}</div>
@@ -257,12 +261,18 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
         <button className="menu-btn back-btn" onClick={onMainMenu}>
           Cancel
         </button>
-      </div>
+      </main>
     );
   }
 
   // Playing
   const round = gameState.round;
+  const statusTone =
+    message === "Capture!"
+      ? " capture"
+      : message === "Extra turn!"
+        ? " extra-turn"
+        : "";
 
   const getPlayerLabel = (player: Player): string => {
     if (player === playerNumber) return "You";
@@ -280,8 +290,33 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
     return "Opponent's Turn";
   };
 
+  const liveAnnouncement = (() => {
+    if (gameState.matchOver || gameState.gameOver) {
+      if (gameState.winner === null) return `Match over. Draw. Final score ${p1Score} to ${p2Score}.`;
+      return `Match over. ${getPlayerLabel(gameState.winner)} wins. Final score ${p1Score} to ${p2Score}.`;
+    }
+
+    if (gameState.roundOver) {
+      if (gameState.roundWinner === null) {
+        return `Round ${round} over. Draw. Score ${p1Score} to ${p2Score}.`;
+      }
+      return `Round ${round} over. ${getPlayerLabel(gameState.roundWinner)} wins the round. Score ${p1Score} to ${p2Score}.`;
+    }
+
+    const turnText = getTurnText();
+    if (message) {
+      return `${message} ${turnText}`.trim();
+    }
+
+    if (error) {
+      return error;
+    }
+
+    return turnText;
+  })();
+
   return (
-    <div className="game-screen">
+    <main className="game-screen" role="main" aria-label="Online game screen">
       <div className="game-header">
         <div className="player-info">
           <span
@@ -294,15 +329,15 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
           <span className="player-score">{p2Score}</span>
         </div>
 
-        <div style={{ textAlign: "center" }}>
+        <div
+          className={`status-plaque${statusTone}`}
+          role="status"
+          aria-live="polite"
+        >
           <div className="round-indicator">Round {round}</div>
           <div className="turn-indicator">{getTurnText()}</div>
           {message && <div className="game-status">{message}</div>}
-          {error && (
-            <p className="lobby-error" style={{ marginTop: 8 }}>
-              {error}
-            </p>
-          )}
+          {error && <p className="lobby-error in-plaque">{error}</p>}
         </div>
 
         <div className="player-info">
@@ -322,7 +357,13 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
         onPitClick={handleMove}
         validMoves={validMoves}
         animatingPit={animatingPit}
+        playerOneLabel={getPlayerLabel(PLAYER_1)}
+        playerTwoLabel={getPlayerLabel(PLAYER_2)}
       />
+
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {liveAnnouncement}
+      </div>
 
       <div className="game-controls">
         <button className="control-btn" onClick={onMainMenu}>
@@ -355,6 +396,6 @@ export default function OnlineGame({ onMainMenu }: OnlineGameProps) {
           round={round}
         />
       )}
-    </div>
+    </main>
   );
 }

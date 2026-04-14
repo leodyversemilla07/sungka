@@ -52,8 +52,9 @@ export default function GameOverModal({
 
   return (
     <div className="game-over-overlay">
-      <div className="game-over-modal">
+      <div className="game-over-modal ornament-frame">
         <div className="game-over-title">{title}</div>
+        <div className="ornament-divider" aria-hidden="true" />
         <div className="game-over-scores">
           <div
             className={`game-over-player${winner === PLAYER_1 ? " winner" : ""}`}
@@ -61,7 +62,7 @@ export default function GameOverModal({
             <span className="game-over-player-label">PLAYER 1</span>
             <span className="game-over-player-score">{p1Score}</span>
             {p1BurntCount > 0 && (
-              <span className="game-over-burnt-info">
+              <span className="game-over-burnt-info burnt-chip">
                 {p1BurntCount} burnt pit{p1BurntCount > 1 ? "s" : ""}
               </span>
             )}
@@ -73,7 +74,7 @@ export default function GameOverModal({
             <span className="game-over-player-label">PLAYER 2</span>
             <span className="game-over-player-score">{p2Score}</span>
             {p2BurntCount > 0 && (
-              <span className="game-over-burnt-info">
+              <span className="game-over-burnt-info burnt-chip">
                 {p2BurntCount} burnt pit{p2BurntCount > 1 ? "s" : ""}
               </span>
             )}
@@ -84,6 +85,7 @@ export default function GameOverModal({
             Shells will be redistributed. Unfilled pits become burnt (sunog).
           </p>
         )}
+        <div className="ornament-divider" aria-hidden="true" />
         <div className="game-over-actions">
           <button className="menu-btn" onClick={onPlayAgain}>
             {isRoundOver ? "Next Round" : "Play Again"}

@@ -13,7 +13,7 @@ export default function MainMenu({ onStartGame }: MainMenuProps) {
   const difficulties: Difficulty[] = ["easy", "medium", "hard"];
 
   return (
-    <div className="menu-screen">
+    <main className="menu-screen" role="main" aria-label="Main menu">
       <h1 className="menu-title">SUNGKA</h1>
       <p className="menu-subtitle">Traditional Filipino Board Game</p>
 
@@ -59,6 +59,6 @@ export default function MainMenu({ onStartGame }: MainMenuProps) {
           </button>
         </div>
       )}
-    </div>
+    </main>
   );
 }

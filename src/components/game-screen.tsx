@@ -37,6 +37,12 @@ export default function GameScreen({
 
   const currentPlayer = gameState.currentPlayer;
   const round = gameState.round;
+  const statusTone =
+    message === "Capture!"
+      ? " capture"
+      : message === "Extra turn!"
+        ? " extra-turn"
+        : "";
 
   const getPlayerLabel = (player: Player): string => {
     if (mode === "ai") {
@@ -67,8 +73,29 @@ export default function GameScreen({
     return `${getPlayerLabel(currentPlayer)}'s Turn`;
   };
 
+  const liveAnnouncement = (() => {
+    if (gameState.matchOver || gameState.gameOver) {
+      if (gameState.winner === null) return `Match over. Draw. Final score ${p1Score} to ${p2Score}.`;
+      return `Match over. ${getPlayerLabel(gameState.winner)} wins. Final score ${p1Score} to ${p2Score}.`;
+    }
+
+    if (gameState.roundOver) {
+      if (gameState.roundWinner === null) {
+        return `Round ${round} over. Draw. Score ${p1Score} to ${p2Score}.`;
+      }
+      return `Round ${round} over. ${getPlayerLabel(gameState.roundWinner)} wins the round. Score ${p1Score} to ${p2Score}.`;
+    }
+
+    const turnText = getTurnText();
+    if (message) {
+      return `${message} ${turnText}`.trim();
+    }
+
+    return turnText;
+  })();
+
   return (
-    <div className="game-screen">
+    <main className="game-screen" role="main" aria-label="Game screen">
       <div className="game-header">
         <div className="player-info">
           <span
@@ -83,7 +110,11 @@ export default function GameScreen({
           <span className="player-score">{p2Score}</span>
         </div>
 
-        <div style={{ textAlign: "center" }}>
+        <div
+          className={`status-plaque${statusTone}`}
+          role="status"
+          aria-live="polite"
+        >
           <div className="round-indicator">Round {round}</div>
           <div className="turn-indicator">{getTurnText()}</div>
           {message && <div className="game-status">{message}</div>}
@@ -108,7 +139,13 @@ export default function GameScreen({
         onPitClick={handleMove}
         validMoves={animating ? [] : validMoves}
         animatingPit={animatingPit}
+        playerOneLabel={getPlayerLabel(PLAYER_1)}
+        playerTwoLabel={getPlayerLabel(PLAYER_2)}
       />
+
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {liveAnnouncement}
+      </div>
 
       <div className="game-controls">
         <button className="control-btn" onClick={resetGame}>
@@ -144,6 +181,6 @@ export default function GameScreen({
           round={round}
         />
       )}
-    </div>
+    </main>
   );
 }
